@@ -346,12 +346,102 @@ class poweropti extends IPSModule
         return $data;
     }
 
-    private function SendCommand(string $method, string $device_id)
+    public function GetHistory()
+    {
+        $device_id = $this->ReadPropertyString('DeviceId');
+        $data = $this->SendCommand('GetHistory', $device_id);
+        $this->SendDebug('History:', $data, 0);
+        return $data;
+    }
+
+    public function GetHistoryDevice()
+    {
+        $device_id = $this->ReadPropertyString('DeviceId');
+        $data = $this->SendCommand('GetHistoryDevice', $device_id);
+        $this->SendDebug('History:', $data, 0);
+        return $data;
+    }
+
+    public function GetHistoryDeviceCSV()
+    {
+        $device_id = $this->ReadPropertyString('DeviceId');
+        $data = $this->SendCommand('GetHistoryDeviceCSV', $device_id);
+        $this->SendDebug('History:', $data, 0);
+        return $data;
+    }
+
+    /** Historische Leistung
+     * Abfrage der historischen Wirkleistung der letzten Stunde ab Abfrage für konkretes Gerät
+     * @return bool|string
+     */
+    public function GetPowerHistory()
+    {
+        $device_id = $this->ReadPropertyString('DeviceId');
+        $data = $this->SendCommand('GetPowerHistory', $device_id);
+        $this->SendDebug('History:', $data, 0);
+        return $data;
+    }
+
+    /** Historische Leistung als CSV
+     * Für ein einzelnes Gerät können die Daten auch als CSV heruntergeladen werden
+     * Die CSV enthält die Leistungswerte für die letzten 7 Tage
+     * @return bool|string
+     */
+    public function GetPowerHistoryCSV()
+    {
+        $device_id = $this->ReadPropertyString('DeviceId');
+        $data = $this->SendCommand('GetPowerHistoryCSV', $device_id);
+        $this->SendDebug('History:', $data, 0);
+        return $data;
+    }
+
+    /** Historische Werte für bestimmte Zeiträume
+     * @param int|null $year XXXX liefert die Monatswerte für das angegebene Jahr (XXXX) (vom 1.1. oder vom Aktivierungsstartpunkt bis zum heutigen Tag oder bis zum 31.12.)
+     * @param int|null $month YY liefert die Tageswerte für das angegebene Jahr (XXXX) und den Monat (YY) (vom 1. bis zum Letzten des Monats)
+     * @param int|null $day ZZ liefert die Stundenwerte für das konkrete Datum (von 0 Uhr lokaler Zeit bis 23:59 lokaler Zeit)
+     * @param int|null $fromhour WW liefert die Viertelstundenwerte ab angegebenen Zeitpunkt für 6 Stunden (also 24 Werte). Z.B. fromHour=6, dann werden Werte von 6:00 bis 11:59 geliefert
+     * Sollte eine Abfrage nicht die richtige Kombination aus Parametern enthalten z.B. nur Tag und Jahr sind angegeben, tritt der Standardfall ein → letzten 24 Stundenwerte ab Abruf
+     * @return bool|string
+     */
+    public function GetHistoryInterval(int $year = null, int $month = null, int $day = null, int $fromhour = null)
+    {
+        $device_id = $this->ReadPropertyString('DeviceId');
+        $data = $this->SendCommand('GetHistoryInterval', $device_id);
+        $this->SendDebug('History:', $data, 0);
+        return $data;
+    }
+
+    /** Historische Werte für bestimmte Zeiträume eines Geräts
+     * @param string $device_id
+     * @param int|null $year XXXX liefert die Monatswerte für das angegebene Jahr (XXXX) (vom 1.1. oder vom Aktivierungsstartpunkt bis zum heutigen Tag oder bis zum 31.12.)
+     * @param int|null $month YY liefert die Tageswerte für das angegebene Jahr (XXXX) und den Monat (YY) (vom 1. bis zum Letzten des Monats)
+     * @param int|null $day ZZ liefert die Stundenwerte für das konkrete Datum (von 0 Uhr lokaler Zeit bis 23:59 lokaler Zeit)
+     * @param int|null $fromhour WW liefert die Viertelstundenwerte ab angegebenen Zeitpunkt für 6 Stunden (also 24 Werte). Z.B. fromHour=6, dann werden Werte von 6:00 bis 11:59 geliefert
+     * Sollte eine Abfrage nicht die richtige Kombination aus Parametern enthalten z.B. nur Tag und Jahr sind angegeben, tritt der Standardfall ein → letzten 24 Stundenwerte ab Abruf
+     * @return bool|string
+     */
+    public function GetHistoryDeviceInterval(int $year = null, int $month = null, int $day = null, int $fromhour = null)
+    {
+        $device_id = $this->ReadPropertyString('DeviceId');
+        $parameter = [
+            'year' => $year,
+            'month' => $month,
+            'day' => $day,
+            'fromhour' => $fromhour
+        ];
+
+        $data = $this->SendCommand('GetHistoryDeviceInterval', $device_id, $parameter);
+        $this->SendDebug('History:', $data, 0);
+        return $data;
+    }
+
+    private function SendCommand(string $method, string $device_id, array $parameter = [])
     {
         $result = $this->SendDataToParent(json_encode([
             'DataID' => '{52F711EB-D83C-2969-9081-206A6B3305A8}',
             'method' => $method,
-            'device_id' => $device_id
+            'device_id' => $device_id,
+            'parameter' => $parameter
         ]));
         return $result;
     }
