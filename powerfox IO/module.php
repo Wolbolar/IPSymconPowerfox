@@ -135,13 +135,21 @@ class powerfoxIO extends IPSModule
         }
         if($method == 'GetHistoryInterval')
         {
-            return $this->GetHistoryInterval($device_id);
+            $parameter = $data->parameter;
+            $year = $parameter->year;
+            $month = $parameter->month;
+            $day = $parameter->day;
+            $fromhour = $parameter->fromhour;
+            return $this->GetHistoryInterval($year, $month, $day, $fromhour);
         }
         if($method == 'GetHistoryDeviceInterval')
         {
             $parameter = $data->parameter;
-            // $interval = json_decode()
-            return $this->GetHistoryDeviceInterval($device_id);
+            $year = $parameter->year;
+            $month = $parameter->month;
+            $day = $parameter->day;
+            $fromhour = $parameter->fromhour;
+            return $this->GetHistoryDeviceInterval($device_id, $year, $month, $day, $fromhour);
         }
         return false;
     }
@@ -249,7 +257,32 @@ class powerfoxIO extends IPSModule
      */
     public function GetHistoryInterval(int $year = null, int $month = null, int $day = null, int $fromhour = null)
     {
-        $url = self::POWERFOX_BASE_URL . self::API_20 . self::HISTORY;
+        if(is_null($year))
+        {
+            $time = time();
+            $year = date('Y', $time);
+        }
+        $parameter = '?year=' . strval($year);
+        $this->SendDebug('year:', strval($year), 0);
+
+        if(!is_null($month))
+        {
+            $parameter .= '&month=' . $month;
+            $this->SendDebug('month:', strval($month), 0);
+        }
+
+        if(!is_null($month))
+        {
+            $parameter .= '&day=' . $day;
+            $this->SendDebug('day:', strval($day), 0);
+        }
+
+        if(!is_null($fromhour))
+        {
+            $parameter .= '&fromHour=' . strval($fromhour);
+            $this->SendDebug('from hour:', strval($fromhour), 0);
+        }
+        $url = self::POWERFOX_BASE_URL . self::API_20 . self::HISTORY . $parameter;
         $devices = $this->SendData($url);
         return $devices;
     }
@@ -265,7 +298,32 @@ class powerfoxIO extends IPSModule
      */
     private function GetHistoryDeviceInterval(string $device_id, int $year = null, int $month = null, int $day = null, int $fromhour = null)
     {
-        $url = self::POWERFOX_BASE_URL . self::API_20 . self::MY_DEVICE . $device_id . self::HISTORY_DEVICE;
+        if(is_null($year))
+        {
+            $time = time();
+            $year = date('Y', $time);
+        }
+        $parameter = '?year=' . strval($year);
+        $this->SendDebug('year:', strval($year), 0);
+
+        if(!is_null($month))
+        {
+            $parameter .= '&month=' . $month;
+            $this->SendDebug('month:', strval($month), 0);
+        }
+
+        if(!is_null($month))
+        {
+            $parameter .= '&day=' . $day;
+            $this->SendDebug('day:', strval($day), 0);
+        }
+
+        if(!is_null($fromhour))
+        {
+            $parameter .= '&fromHour=' . strval($fromhour);
+            $this->SendDebug('from hour:', strval($fromhour), 0);
+        }
+        $url = self::POWERFOX_BASE_URL . self::API_20 . self::MY_DEVICE . $device_id . self::HISTORY_DEVICE . $parameter;
         $devices = $this->SendData($url);
         return $devices;
     }
