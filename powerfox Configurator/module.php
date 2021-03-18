@@ -18,6 +18,7 @@ class powerfoxConfigurator extends IPSModule
         parent::Create();
 
         $this->RequireParent("{47E17935-CBB5-02B3-BAA3-7CD681898DBC}"); // Powerfox I/O
+        $this->RegisterAttributeString('devices', '[]');
         $this->RegisterPropertyInteger("ImportCategoryID", 0);
     }
 
@@ -77,7 +78,23 @@ class powerfoxConfigurator extends IPSModule
 
     public function GetConfiguration()
     {
-        $devices = $this->RequestDataFromParent('GetALLDevices');
+        $payload = $this->RequestDataFromParent('GetALLDevices');
+        $this->SendDebug('powerfox request devices', $payload, 0);
+        $devices = json_decode($payload, true);
+        if(isset($devices['Message']))
+        {
+            if($devices['Message'] == 'Die Autorisierung wurde für diese Anforderung verweigert.')
+            {
+                $this->SendDebug('powerfox authorisation failed', 'please check user and password', 0);
+            }
+            $config = [];
+        }
+        else{
+            $this->WriteAttributeString('devices', json_encode($devices));
+            $this->SendDebug('powerfox save devices to buffer', json_encode($devices), 0);
+            $config = $devices;
+        }
+        return $config;
     }
 
     private function RequestDataFromParent(string $endpoint)
@@ -99,43 +116,53 @@ class powerfoxConfigurator extends IPSModule
     private function Get_ListConfiguration()
     {
         $config_list = [];
-        $payload = $this->RequestDataFromParent('GetALLDevices');
+        $ids = IPS_GetInstanceListByModuleID('{47E17935-CBB5-02B3-BAA3-7CD681898DBC}');
+        $parent_state = IPS_GetInstance($ids[0])['InstanceStatus'];
         $powerfoxInstanceIDList = IPS_GetInstanceListByModuleID('{70960788-E771-65EE-C6B5-1B877771B987}'); // powerfox Devices
-        if ($payload != '') {
-            $devices = json_decode($payload, true);
+        if ($parent_state == IS_ACTIVE) {
+            $devices_buffer = $this->ReadAttributeString('devices');
+            $this->SendDebug('powerfox get device buffer', $devices_buffer, 0);
+            $devices = json_decode($devices_buffer, true);
             $counter = count($devices);
+            $this->SendDebug('powerfox', 'found ' . $counter . ' devices', 0);
             if ($counter > 0) {
                 foreach ($devices as $device) {
                     $instanceID = 0;
-                    $DeviceId = $device['DeviceId'];
-                    $AccountAssociatedSince = $device['AccountAssociatedSince'];
-                    $MainDevice = $device['MainDevice'];
-                    $Division = strval($device['Division']);
-                    $description = $this->GetDivision($Division);
-                    foreach ($powerfoxInstanceIDList as $powerfoxInstanceID) {
-                        if (IPS_GetProperty($powerfoxInstanceID, 'DeviceId') == $DeviceId) {
-                            $instanceID = $powerfoxInstanceID;
+                    if(isset($device['DeviceId']))
+                    {
+                        $DeviceId = $device['DeviceId'];
+                        $AccountAssociatedSince = $device['AccountAssociatedSince'];
+                        $MainDevice = $device['MainDevice'];
+                        $Division = strval($device['Division']);
+                        $description = $this->GetDivision($Division);
+                        foreach ($powerfoxInstanceIDList as $powerfoxInstanceID) {
+                            if (IPS_GetProperty($powerfoxInstanceID, 'DeviceId') == $DeviceId) {
+                                $instanceID = $powerfoxInstanceID;
+                            }
                         }
-                    }
-                    $config_list[] = ["instanceID" => $instanceID,
-                        "name" => 'powerfox [' . $DeviceId . ']',
-                        "DeviceId" => $DeviceId,
-                        "AccountAssociatedSince" => $this->GetDate($AccountAssociatedSince),
-                        "MainDevice" => $this->GetMainDevice($MainDevice),
-                        "Division" => $description,
-                        "create" => [
-                            [
-                                "moduleID" => "{70960788-E771-65EE-C6B5-1B877771B987}",
-                                "configuration" => [
-                                    "DeviceId" => $DeviceId,
-                                    "AccountAssociatedSince" => $AccountAssociatedSince,
-                                    "MainDevice" => $MainDevice,
-                                    "Division" => $Division,
-                                ],
-                                "location" => $this->SetLocation()
+                        $config_list[] = ["instanceID" => $instanceID,
+                            "name" => 'powerfox [' . $DeviceId . ']',
+                            "DeviceId" => $DeviceId,
+                            "AccountAssociatedSince" => $this->GetDate($AccountAssociatedSince),
+                            "MainDevice" => $this->GetMainDevice($MainDevice),
+                            "Division" => $description,
+                            "create" => [
+                                [
+                                    "moduleID" => "{70960788-E771-65EE-C6B5-1B877771B987}",
+                                    "configuration" => [
+                                        "DeviceId" => $DeviceId,
+                                        "AccountAssociatedSince" => $AccountAssociatedSince,
+                                        "MainDevice" => $MainDevice,
+                                        "Division" => $Division,
+                                    ],
+                                    "location" => $this->SetLocation()
+                                ]
                             ]
-                        ]
-                    ];
+                        ];
+                    }
+                    else{
+                        $config_list = [];
+                    }
                 }
             }
         }
@@ -186,12 +213,16 @@ class powerfoxConfigurator extends IPSModule
     {
         //Check Powerfox IO availability
         $ids = IPS_GetInstanceListByModuleID('{47E17935-CBB5-02B3-BAA3-7CD681898DBC}');
+        $parent_state = IPS_GetInstance($ids[0])['InstanceStatus'];
+        $this->SendDebug('powerfox io state', $parent_state, 0);
         if (IPS_GetInstance($ids[0])['InstanceStatus'] != IS_ACTIVE) {
-            $show_config = true;
-        } else {
             $show_config = false;
+        } else {
+            $show_config = true;
         }
-
+        $this->SendDebug('powerfox show configuration', json_encode($show_config), 0);
+        $values = $this->Get_ListConfiguration();
+        $this->SendDebug('config form values', json_encode($values), 0);
         $form = [
             [
                 'type' => 'Image',
@@ -207,9 +238,9 @@ class powerfoxConfigurator extends IPSModule
             ],
             [
                 'name' => 'powerfoxConfiguration',
+                'caption' => 'powerfox devices',
                 'type' => 'Configurator',
-                // 'visible' => $show_config,
-                'visible' => true,
+                'visible' => $show_config,
                 'rowCount' => 20,
                 'add' => false,
                 'delete' => false,
@@ -250,7 +281,7 @@ class powerfoxConfigurator extends IPSModule
                         'width' => '150px'
                     ]
                 ],
-                'values' => $this->Get_ListConfiguration()
+                'values' => $values
             ]
         ];
         return $form;
@@ -282,8 +313,7 @@ class powerfoxConfigurator extends IPSModule
                 'type' => 'Label',
                 'visible' => $visibility_label2,
                 'caption' => 'Status: Powerfox IO is OK!'
-            ]
-            /*,
+            ],
             [
                 'type' => 'Label',
                 'visible' => true,
@@ -295,7 +325,6 @@ class powerfoxConfigurator extends IPSModule
                 'caption' => 'Read configuration',
                 'onClick' => 'PF_GetConfiguration($id);'
             ]
-            */
         ];
         return $form;
     }

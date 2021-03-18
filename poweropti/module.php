@@ -28,15 +28,23 @@ class poweropti extends IPSModule
         $this->RegisterPropertyBoolean('MainDevice', false);
         $this->RegisterPropertyString('Division', '');
         $this->RegisterPropertyString('description', '');
-        $this->RegisterAttributeFloat('Watt', 0);
-        $this->RegisterAttributeFloat('Timestamp', 0);
+        $this->RegisterAttributeFloat('Power', 0);
+        $this->RegisterAttributeBoolean('Power_enabled', false);
+        $this->RegisterAttributeInteger('Timestamp', 0);
+        $this->RegisterAttributeBoolean('Timestamp_enabled', false);
         $this->RegisterAttributeFloat('A_Plus', 0);
+        $this->RegisterAttributeBoolean('A_Plus_enabled', false);
         $this->RegisterAttributeFloat('A_Minus', 0);
-        $this->RegisterPropertyInteger('updateinterval', 3);
-        $this->RegisterTimer('PowerfoxUpdate', 0, 'PF_UpdateStatus(' . $this->InstanceID . ');');
+        $this->RegisterAttributeBoolean('A_Minus_enabled', false);
+        $this->RegisterAttributeBoolean('Bidirectional_counter', false);
+        $this->RegisterAttributeBoolean('Bidirectional_counter_enabled', false);
+        $this->RegisterAttributeBoolean('feed_in_electricity', false);
+        $this->RegisterAttributeBoolean('feed_in_electricity_enabled', false);
 
-        //we will wait until the kernel is ready
-        $this->RegisterMessage(0, IPS_KERNELMESSAGE);
+
+        $this->RegisterPropertyInteger('updateinterval', 3);
+
+        $this->RegisterTimer('PowerfoxUpdate', 0, 'PF_UpdateStatus(' . $this->InstanceID . ');');
 
         //we will wait until the kernel is ready
         $this->RegisterMessage(0, IPS_KERNELMESSAGE);
@@ -101,9 +109,198 @@ class poweropti extends IPSModule
         if($division == self::ELECTRICITY_METER)
         {
             $this->RegisterProfile('Powerfox.Power', 'Electricity', '', ' W', 0, 5000, 10, 0, VARIABLETYPE_FLOAT);
-            $this->RegisterVariableFloat('Power', 'Power', 'Powerfox.Power', $this->_getPosition());
+            $this->SetupVariable(
+                'Power', $this->Translate('Power'), 'Powerfox.Power', $this->_getPosition(), VARIABLETYPE_FLOAT, false, true
+            );
+            $bidirectional_counter = $this->ReadAttributeBoolean('Bidirectional_counter_enabled');
+            if($bidirectional_counter)
+            {
+                $this->SetupVariable(
+                    'feed_in_electricity', $this->Translate('feed-in electricity'), '~Switch', $this->_getPosition(), VARIABLETYPE_BOOLEAN, false, false
+                );
+            }
+            $this->SetupVariable(
+                'Timestamp', $this->Translate('Timestamp'), '~UnixTimestamp', $this->_getPosition(), VARIABLETYPE_INTEGER, false, false
+            );
+            $this->SetupVariable(
+                'A_Plus', $this->Translate('A Plus'), 'Powerfox.Power', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
+            );
+            $this->SetupVariable(
+                'A_Minus', $this->Translate('A Minus'), 'Powerfox.Power', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
+            );
+        }
+        if($division == self::COLD_WATER_METER)
+        {
+            // todo
+            $this->RegisterProfile('Powerfox.Volume', 'Drops', '', '', 0, 5000, 10, 0, VARIABLETYPE_FLOAT);
+            $this->SetupVariable(
+                'Volume', $this->Translate('Volume'), 'Powerfox.Volume', $this->_getPosition(), VARIABLETYPE_FLOAT, false, true
+            );
+        }
+        if($division == self::HOT_WATER_METER)
+        {
+            // todo
+            $this->RegisterProfile('Powerfox.Volume', 'Drops', '', '', 0, 5000, 10, 0, VARIABLETYPE_FLOAT);
+            $this->SetupVariable(
+                'Volume', $this->Translate('Volume'), 'Powerfox.Volume', $this->_getPosition(), VARIABLETYPE_FLOAT, false, true
+            );
+        }
+        if($division == self::HEAT_METER)
+        {
+            // todo
+            $this->RegisterProfile('Powerfox.Volume', 'Drops', '', '', 0, 5000, 10, 0, VARIABLETYPE_FLOAT);
+            $this->SetupVariable(
+                'Volume', $this->Translate('Volume'), 'Powerfox.Volume', $this->_getPosition(), VARIABLETYPE_FLOAT, false, true
+            );
+        }
+        if($division == self::GAS_METER)
+        {
+            // todo
+            $this->RegisterProfile('Powerfox.Volume', 'Drops', '', '', 0, 5000, 10, 0, VARIABLETYPE_FLOAT);
+            $this->SetupVariable(
+                'Volume', $this->Translate('Volume'), 'Powerfox.Volume', $this->_getPosition(), VARIABLETYPE_FLOAT, false, true
+            );
+        }
+        if($division == self::COLD_AND_HOT_WATER_METER)
+        {
+            // todo
+            $this->RegisterProfile('Powerfox.Volume', 'Drops', '', '', 0, 5000, 10, 0, VARIABLETYPE_FLOAT);
+            $this->SetupVariable(
+                'Volume', $this->Translate('Volume'), 'Powerfox.Volume', $this->_getPosition(), VARIABLETYPE_FLOAT, false, true
+            );
         }
     }
+
+    /** Variable anlegen / löschen
+     *
+     * @param $ident
+     * @param $name
+     * @param $profile
+     * @param $position
+     * @param $vartype
+     * @param $enableaction
+     * @param bool $visible
+     *
+     * @return bool|int
+     */
+    protected function SetupVariable($ident, $name, $profile, $position, $vartype, $enableaction, $visible = false)
+    {
+        $objid = false;
+        if ($visible) {
+            $this->SendDebug('powerfox Variable:', 'Variable with Ident ' . $ident . ' is visible', 0);
+        } else {
+            $visible = $this->ReadAttributeBoolean($ident . '_enabled');
+            $this->SendDebug('powerfox Variable:', 'Variable with Ident ' . $ident . ' is shown ' . print_r($visible, true), 0);
+        }
+        if ($visible == true) {
+            switch ($vartype) {
+                case VARIABLETYPE_BOOLEAN:
+                    $objid = $this->RegisterVariableBoolean($ident, $name, $profile, $position);
+                    $value = $this->ReadAttributeBoolean($ident);
+                    break;
+                case VARIABLETYPE_INTEGER:
+                    $objid = $this->RegisterVariableInteger($ident, $name, $profile, $position);
+                    $value = $this->ReadAttributeInteger($ident);
+                    break;
+                case VARIABLETYPE_FLOAT:
+                    $objid = $this->RegisterVariableFloat($ident, $name, $profile, $position);
+                    $value = $this->ReadAttributeFloat($ident);
+                    break;
+                case VARIABLETYPE_STRING:
+                    $objid = $this->RegisterVariableString($ident, $name, $profile, $position);
+                    $value = $this->ReadAttributeString($ident);
+                    break;
+            }
+            $this->SetValue($ident, $value);
+            if ($enableaction) {
+                $this->EnableAction($ident);
+            }
+        } else {
+            $objid = @$this->GetIDForIdent($ident);
+            if ($objid > 0) {
+                $this->SendDebug('powerfox Variable:', 'Variable with Ident ' . $ident . ' is not shown, delelete variable', 0);
+                $this->UnregisterVariable($ident);
+            }
+        }
+        return $objid;
+    }
+
+    private function WriteValues()
+    {
+        $division = $this->ReadPropertyString('Division');
+        if($division == self::ELECTRICITY_METER)
+        {
+            $this->WriteEnabledValue('Power', VARIABLETYPE_FLOAT);
+            $this->WriteEnabledValue('Timestamp', VARIABLETYPE_INTEGER);
+            $this->WriteEnabledValue('A_Plus', VARIABLETYPE_FLOAT);
+            $this->WriteEnabledValue('A_Minus', VARIABLETYPE_FLOAT);
+            $this->WriteEnabledValue('feed_in_electricity', VARIABLETYPE_BOOLEAN);
+        }
+        if($division == self::COLD_WATER_METER)
+        {
+            $this->WriteEnabledValue('Volume', VARIABLETYPE_FLOAT);
+        }
+        if($division == self::HOT_WATER_METER)
+        {
+            $this->WriteEnabledValue('Volume', VARIABLETYPE_FLOAT);
+        }
+        if($division == self::HEAT_METER)
+        {
+            $this->WriteEnabledValue('Volume', VARIABLETYPE_FLOAT);
+        }
+        if($division == self::GAS_METER)
+        {
+            $this->WriteEnabledValue('Volume', VARIABLETYPE_FLOAT);
+        }
+        if($division == self::COLD_AND_HOT_WATER_METER)
+        {
+            $this->WriteEnabledValue('Volume', VARIABLETYPE_FLOAT);
+        }
+    }
+
+    private function WriteEnabledValue($ident, $vartype, $enabled = false)
+    {
+        if ($enabled) {
+            $value_enabled = true;
+        } else {
+            $value_enabled = $this->ReadAttributeBoolean($ident . '_enabled');
+        }
+
+        if ($value_enabled) {
+            switch ($vartype) {
+                case VARIABLETYPE_BOOLEAN:
+                    $value = $this->ReadAttributeBoolean($ident);
+                    $debug_value = strval($value);
+                    $this->SendDebug('SetValue boolean', 'ident: ' . $ident . ' value: ' . $debug_value, 0);
+                    $this->SetVariableValue($ident, $value);
+                    break;
+                case VARIABLETYPE_INTEGER:
+                    $value = $this->ReadAttributeInteger($ident);
+                    $this->SendDebug('SetValue integer', 'ident: ' . $ident . ' value: ' . $value, 0);
+                    $this->SetVariableValue($ident, $value);
+                    break;
+                case VARIABLETYPE_FLOAT:
+                    $value = $this->ReadAttributeFloat($ident);
+                    $this->SendDebug('SetValue float', 'ident: ' . $ident . ' value: ' . $value, 0);
+                    $this->SetVariableValue($ident, $value);
+                    break;
+                case VARIABLETYPE_STRING:
+                    $value = $this->ReadAttributeString($ident);
+                    $this->SendDebug('SetValue string', 'ident: ' . $ident . ' value: ' . $value, 0);
+                    $this->SetVariableValue($ident, $value);
+                    break;
+            }
+        }
+    }
+
+    private function SetVariableValue($ident, $value)
+    {
+        if (@$this->GetIDForIdent($ident)) {
+            $this->SetValue($ident, $value);
+        }
+    }
+
+
 
     /** Update Device State
      *
@@ -130,14 +327,22 @@ class poweropti extends IPSModule
         $this->SendDebug('Current Data:', $data, 0);
         $data = json_decode($data, true);
         $power = $data['Watt'];
-        $this->WriteAttributeFloat('Watt', $power);
-        $this->SetValue('Power', $power);
+        $this->WriteAttributeFloat('Power', $power);
+        if($power < -100)
+        {
+            $this->WriteAttributeBoolean('feed_in_electricity', true);
+        }
+        else
+        {
+            $this->WriteAttributeBoolean('feed_in_electricity', false);
+        }
         $power = $data['Timestamp'];
-        $this->WriteAttributeFloat('Timestamp', $power);
+        $this->WriteAttributeInteger('Timestamp', $power);
         $power = $data['A_Plus'];
         $this->WriteAttributeFloat('A_Plus', $power);
         $power = $data['A_Minus'];
         $this->WriteAttributeFloat('A_Minus', $power);
+        $this->WriteValues();
         return $data;
     }
 
@@ -162,6 +367,30 @@ class poweropti extends IPSModule
         if ($buffer != '[]') {
             // $this->CheckDeviceData($snapshot);
         }
+    }
+
+    public function SetWebFrontVariable(string $ident, bool $value)
+    {
+        $this->WriteAttributeBoolean($ident, $value);
+        if ($value) {
+            $this->SendDebug('powerfox Webfront Variable', $ident . ' enabled', 0);
+        } else {
+            $this->SendDebug('powerfox Webfront Variable', $ident . ' disabled', 0);
+        }
+
+        $this->RegisterVariables();
+    }
+
+    public function SetBidirectional_counter(bool $value)
+    {
+        $this->WriteAttributeBoolean('Bidirectional_counter_enabled', $value);
+        if ($value) {
+            $this->SendDebug('powerfox bidirectional counter', 'enabled', 0);
+        } else {
+            $this->SendDebug('powerfox bidirectional counter', 'disabled', 0);
+            $this->WriteAttributeBoolean('feed_in_electricity', false);
+        }
+        $this->RegisterVariables();
     }
 
     /**
@@ -210,6 +439,7 @@ class poweropti extends IPSModule
             $visibility_label1 = false;
             $visibility_label2 = true;
         }
+        $Bidirectional_counter = $this->ReadAttributeBoolean('Bidirectional_counter_enabled');
         $form = [
             [
                 'type' => 'Label',
@@ -220,7 +450,42 @@ class poweropti extends IPSModule
                 'type' => 'Label',
                 'visible' => $visibility_label2,
                 'caption' => 'Status: Power IO is OK!'
-            ]
+            ],
+            [
+                'name' => 'Timestamp_enabled',
+                'type' => 'CheckBox',
+                'caption' => $this->Translate('Timestamp'),
+                'visible' => true,
+                'value' => $this->ReadAttributeBoolean('Timestamp_enabled'),
+                'onChange' => 'PF_SetWebFrontVariable($id, "Timestamp_enabled", $Timestamp_enabled);'],
+            [
+                'name' => 'A_Plus_enabled',
+                'type' => 'CheckBox',
+                'caption' => $this->Translate('A Plus'),
+                'visible' => true,
+                'value' => $this->ReadAttributeBoolean('A_Plus_enabled'),
+                'onChange' => 'PF_SetWebFrontVariable($id, "A_Plus_enabled", $A_Plus_enabled);'],
+            [
+                'name' => 'A_Minus_enabled',
+                'type' => 'CheckBox',
+                'caption' => $this->Translate('A Minus'),
+                'visible' => true,
+                'value' => $this->ReadAttributeBoolean('A_Minus_enabled'),
+                'onChange' => 'PF_SetWebFrontVariable($id, "A_Minus_enabled", $A_Minus_enabled);'],
+            [
+                'name' => 'Bidirectional_counter_enabled',
+                'type' => 'CheckBox',
+                'caption' => $this->Translate('Bidirectional counter'),
+                'visible' => true,
+                'value' => $this->ReadAttributeBoolean('Bidirectional_counter_enabled'),
+                'onChange' => 'PF_SetBidirectional_counter($id, $Bidirectional_counter_enabled);'],
+            [
+                'name' => 'feed_in_electricity_enabled',
+                'type' => 'CheckBox',
+                'caption' => $this->Translate('feed-in electricity'),
+                'visible' => $Bidirectional_counter,
+                'value' => $this->ReadAttributeBoolean('feed_in_electricity_enabled'),
+                'onChange' => 'PF_SetWebFrontVariable($id, "feed_in_electricity_enabled", $feed_in_electricity_enabled);']
         ];
         return $form;
     }

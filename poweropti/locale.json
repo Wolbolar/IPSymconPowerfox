@@ -1,6 +1,12 @@
 {
     "translations": {
         "de": {
+            "Power": "Leistung",
+            "Timestamp": "Zeitstempel",
+            "A Plus": "A Plus",
+            "A Minus": "A Minus",
+            "Bidirectional counter": "Zweirichtungszähler",
+            "feed-in electricity": "Stromeinspeisung",
             "Creating instance.": "Instanz wird erzeugt",
             "configuration valid.": "Konfiguration gültig.",
             "interface closed.": "Schnittstelle geschlossen.",
