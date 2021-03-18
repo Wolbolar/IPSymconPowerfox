@@ -1,0 +1,16 @@
+{
+    "id": "{70960788-E771-65EE-C6B5-1B877771B987}",
+    "name": "poweropti",
+    "type": 3,
+    "vendor": "powerfox",
+    "aliases": ["powerfox poweropti"],
+    "parentRequirements": [
+        "{52F711EB-D83C-2969-9081-206A6B3305A8}"
+    ],
+    "childRequirements": [],
+    "implemented": [
+        "{797F8101-BBE4-A81E-BDBC-1A81101E4732}"
+    ],
+    "prefix": "PF",
+    "url": "https://www.powerfox.energy/wp-content/uploads/2020/07/IP-Symcon-und-powerfox-1.pdf"
+}

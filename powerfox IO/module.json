@@ -1,0 +1,16 @@
+{
+    "id": "{47E17935-CBB5-02B3-BAA3-7CD681898DBC}",
+    "name": "powerfox IO",
+    "type": 1,
+    "vendor": "powerfox",
+    "aliases": ["powerfox IO"],
+    "parentRequirements": [],
+    "childRequirements": [
+        "{797F8101-BBE4-A81E-BDBC-1A81101E4732}"
+    ],
+    "implemented": [
+        "{52F711EB-D83C-2969-9081-206A6B3305A8}"
+    ],
+    "prefix": "PF",
+    "url": "https://www.powerfox.energy/wp-content/uploads/2020/07/IP-Symcon-und-powerfox-1.pdf"
+}

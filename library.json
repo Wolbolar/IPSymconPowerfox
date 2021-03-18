@@ -1,0 +1,12 @@
+{
+    "id": "{C298FAF2-2D7F-FA9F-1D44-910FCEEDA985}",
+    "name": "Powerfox",
+    "author": "Fonzo",
+    "url": "https://www.powerfox.energy/",
+    "compatibility": {
+        "version": "5.5"
+    },
+    "version": "1.0",
+    "build": 1,
+    "date": 0
+}

@@ -1,0 +1,26 @@
+{
+    "translations": {
+        "de": {
+            "category for powerfox devices": "Kategorie für powerfox Geräte",
+            "category powerfox devices": "Kategorie powerfox Geräte",
+            "Device ID": "Geräte ID",
+            "Account Associated Since": "Konto verknüpft seit",
+            "Main Device": "Hauptgerät",
+            "Device": "Gerät",
+            "Meter type": "Gerätetyp",
+            "No type stored": "Kein Typ hinterlegt",
+            "Electricity meter": "Stromzähler",
+            "Cold water meter": "Kaltwasserzähler",
+            "Hot water meter": "Warmwasserzähler",
+            "Heat meter": "Wärmezähler",
+            "Gas meter": "Gaszähler",
+            "Cold and hot water meters": "Kalt- und Warmwasserzähler",
+            "Read powerfox configuration:": "powerfox Konfiguration auslesen:",
+            "Read configuration": "Konfiguration auslesen",
+            "Creating instance.": "Instanz wird erzeugt",
+            "configuration valid.": "Konfiguration gültig.",
+            "interface closed.": "Schnittstelle geschlossen.",
+            "Please follow the instructions.": "Bitte der Anleitung folgen."
+        }
+    }
+}
