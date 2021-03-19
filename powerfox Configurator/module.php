@@ -116,10 +116,9 @@ class powerfoxConfigurator extends IPSModule
     private function Get_ListConfiguration()
     {
         $config_list = [];
-        $ids = IPS_GetInstanceListByModuleID('{47E17935-CBB5-02B3-BAA3-7CD681898DBC}');
-        $parent_state = IPS_GetInstance($ids[0])['InstanceStatus'];
+        $parent_state = $this->HasActiveParent();
         $powerfoxInstanceIDList = IPS_GetInstanceListByModuleID('{70960788-E771-65EE-C6B5-1B877771B987}'); // powerfox Devices
-        if ($parent_state == IS_ACTIVE) {
+        if ($parent_state) {
             $devices_buffer = $this->ReadAttributeString('devices');
             $this->SendDebug('powerfox get device buffer', $devices_buffer, 0);
             $devices = json_decode($devices_buffer, true);
@@ -212,13 +211,12 @@ class powerfoxConfigurator extends IPSModule
     protected function FormHead()
     {
         //Check Powerfox IO availability
-        $ids = IPS_GetInstanceListByModuleID('{47E17935-CBB5-02B3-BAA3-7CD681898DBC}');
-        $parent_state = IPS_GetInstance($ids[0])['InstanceStatus'];
-        $this->SendDebug('powerfox io state', $parent_state, 0);
-        if (IPS_GetInstance($ids[0])['InstanceStatus'] != IS_ACTIVE) {
-            $show_config = false;
-        } else {
+        $parent_state = $this->HasActiveParent();
+        $this->SendDebug('powerfox io state', json_encode($parent_state), 0);
+        if ($parent_state) {
             $show_config = true;
+        } else {
+            $show_config = false;
         }
         $this->SendDebug('powerfox show configuration', json_encode($show_config), 0);
         $values = $this->Get_ListConfiguration();
@@ -294,13 +292,13 @@ class powerfoxConfigurator extends IPSModule
     protected function FormActions()
     {
         //Check Powerfox IO availability
-        $ids = IPS_GetInstanceListByModuleID('{47E17935-CBB5-02B3-BAA3-7CD681898DBC}');
-        if (IPS_GetInstance($ids[0])['InstanceStatus'] != IS_ACTIVE) {
-            $visibility_label1 = true;
-            $visibility_label2 = false;
-        } else {
+        $parent_state = $this->HasActiveParent();
+        if ($parent_state) {
             $visibility_label1 = false;
             $visibility_label2 = true;
+        } else {
+            $visibility_label1 = true;
+            $visibility_label2 = false;
         }
 
         $form = [
