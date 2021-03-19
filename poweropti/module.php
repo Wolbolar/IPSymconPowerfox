@@ -122,11 +122,12 @@ class poweropti extends IPSModule
             $this->SetupVariable(
                 'Timestamp', $this->Translate('Timestamp'), '~UnixTimestamp', $this->_getPosition(), VARIABLETYPE_INTEGER, false, false
             );
+            $this->RegisterProfile('Powerfox.Power.kW', 'Electricity', '', ' kW', 0, 10000, 100, 3, VARIABLETYPE_FLOAT);
             $this->SetupVariable(
-                'A_Plus', $this->Translate('A Plus'), 'Powerfox.Power', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
+                'A_Plus', $this->Translate('A Plus'), 'Powerfox.Power.kW', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
             );
             $this->SetupVariable(
-                'A_Minus', $this->Translate('A Minus'), 'Powerfox.Power', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
+                'A_Minus', $this->Translate('A Minus'), 'Powerfox.Power.kW', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
             );
         }
         if($division == self::COLD_WATER_METER)
@@ -338,9 +339,9 @@ class poweropti extends IPSModule
         }
         $power = $data['Timestamp'];
         $this->WriteAttributeInteger('Timestamp', $power);
-        $power = $data['A_Plus'];
+        $power = floatval($data['A_Plus'])/1000;
         $this->WriteAttributeFloat('A_Plus', $power);
-        $power = $data['A_Minus'];
+        $power = floatval($data['A_Minus'])/1000;
         $this->WriteAttributeFloat('A_Minus', $power);
         $this->WriteValues();
         return $data;
