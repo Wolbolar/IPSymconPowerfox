@@ -231,7 +231,7 @@ class poweropti extends IPSModule
         $division = $this->ReadPropertyString('Division');
         if($division == self::ELECTRICITY_METER)
         {
-            $this->WriteEnabledValue('Power', VARIABLETYPE_FLOAT);
+            $this->WriteEnabledValue('Power', VARIABLETYPE_FLOAT, true);
             $this->WriteEnabledValue('Timestamp', VARIABLETYPE_INTEGER);
             $this->WriteEnabledValue('A_Plus', VARIABLETYPE_FLOAT);
             $this->WriteEnabledValue('A_Minus', VARIABLETYPE_FLOAT);
