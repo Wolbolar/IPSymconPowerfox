@@ -314,13 +314,13 @@ class poweropti extends IPSModule
         return true;
     }
 
+
     private function SetPowerfoxInterval(): void
     {
         $powerfoxinterval = $this->ReadPropertyInteger('updateinterval');
         $interval = $powerfoxinterval * 1000;
         $this->SetTimerInterval('PowerfoxUpdate', $interval);
     }
-
     public function GetCurrentData()
     {
         $device_id = $this->ReadPropertyString('DeviceId');
@@ -481,6 +481,7 @@ class poweropti extends IPSModule
             $this->SendDebug('powerfox bidirectional counter', 'disabled', 0);
             $this->WriteAttributeBoolean('feed_in_electricity', false);
         }
+        $this->ReloadForm();
         $this->RegisterVariables();
     }
 
