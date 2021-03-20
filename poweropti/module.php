@@ -523,13 +523,14 @@ class poweropti extends IPSModule
     protected function FormActions()
     {
         //Check IO availability
-        $ids = IPS_GetInstanceListByModuleID('{47E17935-CBB5-02B3-BAA3-7CD681898DBC}');
-        if (IPS_GetInstance($ids[0])['InstanceStatus'] != IS_ACTIVE) {
-            $visibility_label1 = true;
-            $visibility_label2 = false;
-        } else {
+        $parent_state = $this->HasActiveParent();
+        $this->SendDebug('powerfox io state', json_encode($parent_state), 0);
+        if ($parent_state) {
             $visibility_label1 = false;
             $visibility_label2 = true;
+        } else {
+            $visibility_label1 = true;
+            $visibility_label2 = false;
         }
         $Bidirectional_counter = $this->ReadAttributeBoolean('Bidirectional_counter_enabled');
         $form = [
