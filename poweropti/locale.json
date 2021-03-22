@@ -10,7 +10,8 @@
             "Creating instance.": "Instanz wird erzeugt",
             "configuration valid.": "Konfiguration gültig.",
             "interface closed.": "Schnittstelle geschlossen.",
-            "Please follow the instructions.": "Bitte der Anleitung folgen."
+            "Please follow the instructions.": "Bitte der Anleitung folgen.",
+            "no device id, please create instance with the powerfox configuartor and delete this instance.": "Es wurde keine Geräte ID gefunden, die Instanz bitte nicht manuell erzeugen, sondern über den powerfox Konfigurator anlegen lassen. Diese Instanz bitte löschen."
         }
     }
 }

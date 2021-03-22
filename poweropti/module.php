@@ -614,6 +614,11 @@ class poweropti extends IPSModule
                 'code' => 202,
                 'icon' => 'error',
                 'caption' => 'no category selected.'
+            ],
+            [
+                'code' => 205,
+                'icon' => 'error',
+                'caption' => 'no device id, please create instance with the powerfox configuartor and delete this instance.'
             ]
         ];
 

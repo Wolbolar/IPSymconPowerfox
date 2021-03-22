@@ -135,7 +135,9 @@ class powerfoxConfigurator extends IPSModule
                         $Division = strval($device['Division']);
                         $description = $this->GetDivision($Division);
                         foreach ($powerfoxInstanceIDList as $powerfoxInstanceID) {
-                            if (IPS_GetProperty($powerfoxInstanceID, 'DeviceId') == $DeviceId) {
+                            $connection_id =IPS_GetInstance($powerfoxInstanceID)['ConnectionID'];
+                            $connection_id_configurator =IPS_GetInstance($this->InstanceID)['ConnectionID'];
+                            if ((IPS_GetProperty($powerfoxInstanceID, 'DeviceId') == $DeviceId) && ($connection_id_configurator == $connection_id)) {
                                 $instanceID = $powerfoxInstanceID;
                             }
                         }
