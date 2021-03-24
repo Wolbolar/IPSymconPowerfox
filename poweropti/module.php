@@ -327,8 +327,14 @@ class poweropti extends IPSModule
         $data = $this->SendCommand('GetCurrentData', $device_id);
         $this->SendDebug('Current Data:', $data, 0);
         $data = json_decode($data, true);
-        $power = $data['Watt'];
-        $this->WriteAttributeFloat('Power', $power);
+        $power = floatval($data['Watt']);
+        if($power == 0)
+        {
+            $this->SendDebug('powerfox', 'a zero value was received, no data is stored', 0);
+        }
+        else{
+            $this->WriteAttributeFloat('Power', $power);
+        }
         if($power < -100)
         {
             $this->WriteAttributeBoolean('feed_in_electricity', true);
