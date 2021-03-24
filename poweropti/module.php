@@ -345,10 +345,24 @@ class poweropti extends IPSModule
         }
         $power = $data['Timestamp'];
         $this->WriteAttributeInteger('Timestamp', $power);
-        $power = floatval($data['A_Plus'])/1000;
-        $this->WriteAttributeFloat('A_Plus', $power);
-        $power = floatval($data['A_Minus'])/1000;
-        $this->WriteAttributeFloat('A_Minus', $power);
+        $a_plus = floatval($data['A_Plus']);
+        if($a_plus == 0)
+        {
+            $this->SendDebug('powerfox', 'a zero value was received for a plus, no data is stored', 0);
+        }
+        else{
+            $a_plus = $a_plus/1000;
+            $this->WriteAttributeFloat('A_Plus', $a_plus);
+        }
+        $a_minus = floatval($data['A_Minus']);
+        if($a_minus == 0)
+        {
+            $this->SendDebug('powerfox', 'a zero value was received for a minus, no data is stored', 0);
+        }
+        else{
+            $a_minus = $a_minus/1000;
+            $this->WriteAttributeFloat('A_Minus', $a_minus);
+        }
         $this->WriteValues();
         return $data;
     }
