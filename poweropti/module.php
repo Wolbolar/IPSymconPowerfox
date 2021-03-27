@@ -108,9 +108,8 @@ class poweropti extends IPSModule
         $division = $this->ReadPropertyString('Division');
         if($division == self::ELECTRICITY_METER)
         {
-            $this->RegisterProfile('Powerfox.Power', 'Electricity', '', ' W', 0, 5000, 10, 0, VARIABLETYPE_FLOAT);
             $this->SetupVariable(
-                'Power', $this->Translate('Power'), 'Powerfox.Power', $this->_getPosition(), VARIABLETYPE_FLOAT, false, true
+                'Power', $this->Translate('Power'), '~Watt.3680', $this->_getPosition(), VARIABLETYPE_FLOAT, false, true
             );
             $bidirectional_counter = $this->ReadAttributeBoolean('Bidirectional_counter_enabled');
             if($bidirectional_counter)
@@ -119,15 +118,16 @@ class poweropti extends IPSModule
                     'feed_in_electricity', $this->Translate('feed-in electricity'), '~Switch', $this->_getPosition(), VARIABLETYPE_BOOLEAN, false, false
                 );
             }
+            $exist_timestamp = $this->CheckExistence('Timestamp');
             $this->SetupVariable(
                 'Timestamp', $this->Translate('Timestamp'), '~UnixTimestamp', $this->_getPosition(), VARIABLETYPE_INTEGER, false, false
             );
-            $this->RegisterProfile('Powerfox.Power.kW', 'Electricity', '', ' kW', 0, 10000, 100, 3, VARIABLETYPE_FLOAT);
+            $this->SetIcon('Timestamp', 'Clock', $exist_timestamp);
             $this->SetupVariable(
-                'A_Plus', $this->Translate('A Plus'), 'Powerfox.Power.kW', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
+                'A_Plus', $this->Translate('A Plus'), '~Electricity', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
             );
             $this->SetupVariable(
-                'A_Minus', $this->Translate('A Minus'), 'Powerfox.Power.kW', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
+                'A_Minus', $this->Translate('A Minus'), '~Electricity', $this->_getPosition(), VARIABLETYPE_FLOAT, false, false
             );
         }
         if($division == self::COLD_WATER_METER)
@@ -170,6 +170,30 @@ class poweropti extends IPSModule
                 'Volume', $this->Translate('Volume'), 'Powerfox.Volume', $this->_getPosition(), VARIABLETYPE_FLOAT, false, true
             );
         }
+    }
+
+    private function CheckExistence($ident)
+    {
+        $objectid = @$this->GetIDForIdent($ident);
+        if ($objectid == false) {
+            $exist = false;
+        } else {
+            $exist = true;
+        }
+        return $exist;
+    }
+
+    private function SetIcon($ident, $icon, $exist)
+    {
+        $icon_exist = false;
+        if ($exist == false) {
+            $objectid = @$this->GetIDForIdent($ident);
+            if ($objectid > 0)
+            {
+                $icon_exist = IPS_SetIcon($this->GetIDForIdent($ident), $icon);
+            }
+        }
+        return $icon_exist;
     }
 
     /** Variable anlegen / löschen
@@ -327,14 +351,7 @@ class poweropti extends IPSModule
         $data = $this->SendCommand('GetCurrentData', $device_id);
         $this->SendDebug('Current Data:', $data, 0);
         $data = json_decode($data, true);
-        $power = floatval($data['Watt']);
-        if($power == 0)
-        {
-            $this->SendDebug('powerfox', 'a zero value was received, no data is stored', 0);
-        }
-        else{
-            $this->WriteAttributeFloat('Power', $power);
-        }
+        $power = floatval($data['Watt']); // value in watt
         if($power < -100)
         {
             $this->WriteAttributeBoolean('feed_in_electricity', true);
@@ -343,26 +360,15 @@ class poweropti extends IPSModule
         {
             $this->WriteAttributeBoolean('feed_in_electricity', false);
         }
+        //$this->SendDebug('Current Power:', $power . ' kWh', 0);
+        $this->WriteAttributeFloat('Power', $power);
         $power = $data['Timestamp'];
         $this->WriteAttributeInteger('Timestamp', $power);
         $a_plus = floatval($data['A_Plus']);
-        if($a_plus == 0)
-        {
-            $this->SendDebug('powerfox', 'a zero value was received for a plus, no data is stored', 0);
-        }
-        else{
-            $a_plus = $a_plus/1000;
-            $this->WriteAttributeFloat('A_Plus', $a_plus);
-        }
+        $this->SendDebug('Meter Reading:', $a_plus . ' kWh', 0);
+        $this->WriteAttributeFloat('A_Plus', $a_plus);
         $a_minus = floatval($data['A_Minus']);
-        if($a_minus == 0)
-        {
-            $this->SendDebug('powerfox', 'a zero value was received for a minus, no data is stored', 0);
-        }
-        else{
-            $a_minus = $a_minus/1000;
-            $this->WriteAttributeFloat('A_Minus', $a_minus);
-        }
+        $this->WriteAttributeFloat('A_Minus', $a_minus);
         $this->WriteValues();
         return $data;
     }

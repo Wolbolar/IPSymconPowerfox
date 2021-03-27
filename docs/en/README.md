@@ -93,14 +93,19 @@ A single device can be created by marking it on the device and pressing the butt
 ### e. Device instance setup
 Manual configuration of a device module is not necessary, this is done using the configurator. Individual variables can still be activated in the device module for display on the web front if required.
 
+If you want to record the data, select _Counter_ as the type
+
+![zaehler](img/Archiv_Zaehler.png?raw=true "counter")
 
 ## 4. Function reference
 
 ### a. Webfront View
 
-![Webfront](img/powerfox_webfront.png?raw=true "Webfront")
+![webfront 1nstance](img/powerfox_webfront_1.png?raw=true "instance")
 
-![Webfront Graph](img/powerfox_webfront_graph.png?raw=true "Webfront Diagramm")
+![powerfox graph 2](img/powerfox_webfront_graph_1.png?raw=true "graph")
+
+![powerfox graph 2](img/powerfox_webfront_graph_2.png?raw=true "graph 2")
 
 
 ## 5. Configuration:

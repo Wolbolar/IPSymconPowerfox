@@ -8,6 +8,7 @@ class powerfoxIO extends IPSModule
     private const API_20 = '/api/2.0';
     private const MY_DEVICE = '/my/';
     private const CURRENT = '/current';
+    private const KWH = '?unit=kwh';
     private const ALL_DEVICES = '/my/all/devices';
     private const HISTORY = '/my/all/report';
     private const HISTORY_DEVICE = '/report';
@@ -186,7 +187,7 @@ class powerfoxIO extends IPSModule
 
     private function GetCurrentData($device_id)
     {
-        $url = self::POWERFOX_BASE_URL . self::API_20 . self::MY_DEVICE . $device_id . self::CURRENT;
+        $url = self::POWERFOX_BASE_URL . self::API_20 . self::MY_DEVICE . $device_id . self::CURRENT . self::KWH;
         $data = $this->SendData($url);
         return $data;
     }

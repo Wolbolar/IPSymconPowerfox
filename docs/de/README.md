@@ -99,14 +99,19 @@ Ein einzelnes Gerät kann man durch markieren auf das Gerät und ein Druck auf d
 ### f. Einrichtung der Geräteinstanz
 Eine manuelle Einrichtung eines Gerätemoduls ist nicht erforderlich, das erfolgt über den Konfigurator. In dem Geräte-Modul können noch einzelne Variablen bei Bedarf zur Anzeige im Webfront freigeschaltet werden.
 
+Wenn man die Zählerstanddaten aufzeichen will, ist als Typ beim Zählerstand _Zähler_ zu wählen
+
+![zaehler](img/Archiv_Zaehler.png?raw=true "counter")
 
 ## 4. Funktionsreferenz
 
 ### a. Webfront Ansicht
 
-![Webfront](img/powerfox_webfront.png?raw=true "Webfront")  
+![webfront 1nstance](img/powerfox_webfront_1.png?raw=true "instance")
 
-![Webfront Graph](img/powerfox_webfront_graph.png?raw=true "Webfront Diagramm")
+![powerfox graph 2](img/powerfox_webfront_graph_1.png?raw=true "graph")
+
+![powerfox graph 2](img/powerfox_webfront_graph_2.png?raw=true "graph 2")
 
 ## 5. Konfiguration:
 
