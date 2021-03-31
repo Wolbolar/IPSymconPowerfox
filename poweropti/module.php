@@ -351,24 +351,36 @@ class poweropti extends IPSModule
         $data = $this->SendCommand('GetCurrentData', $device_id);
         $this->SendDebug('Current Data:', $data, 0);
         $data = json_decode($data, true);
-        $power = floatval($data['Watt']); // value in watt
-        if($power < -100)
+        if(isset($data['Watt']))
         {
-            $this->WriteAttributeBoolean('feed_in_electricity', true);
+            $power = floatval($data['Watt']); // value in watt
+            if($power < -100)
+            {
+                $this->WriteAttributeBoolean('feed_in_electricity', true);
+            }
+            else
+            {
+                $this->WriteAttributeBoolean('feed_in_electricity', false);
+            }
+            //$this->SendDebug('Current Power:', $power . ' kWh', 0);
+            $this->WriteAttributeFloat('Power', $power);
         }
-        else
+        if(isset($data['Timestamp']))
         {
-            $this->WriteAttributeBoolean('feed_in_electricity', false);
+            $timestamp = $data['Timestamp'];
+            $this->WriteAttributeInteger('Timestamp', $timestamp);
         }
-        //$this->SendDebug('Current Power:', $power . ' kWh', 0);
-        $this->WriteAttributeFloat('Power', $power);
-        $power = $data['Timestamp'];
-        $this->WriteAttributeInteger('Timestamp', $power);
-        $a_plus = floatval($data['A_Plus']);
-        $this->SendDebug('Meter Reading:', $a_plus . ' kWh', 0);
-        $this->WriteAttributeFloat('A_Plus', $a_plus);
-        $a_minus = floatval($data['A_Minus']);
-        $this->WriteAttributeFloat('A_Minus', $a_minus);
+        if(isset($data['A_Plus']))
+        {
+            $a_plus = floatval($data['A_Plus']);
+            $this->SendDebug('Meter Reading:', $a_plus . ' kWh', 0);
+            $this->WriteAttributeFloat('A_Plus', $a_plus);
+        }
+        if(isset($data['A_Minus']))
+        {
+            $a_minus = floatval($data['A_Minus']);
+            $this->WriteAttributeFloat('A_Minus', $a_minus);
+        }
         $this->WriteValues();
         return $data;
     }
