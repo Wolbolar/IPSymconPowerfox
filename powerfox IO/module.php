@@ -196,6 +196,7 @@ class powerfoxIO extends IPSModule
     {
         $user = $this->ReadPropertyString('Username');
         $password = $this->ReadPropertyString('Password');
+        /*
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30); //timeout after 30 seconds
@@ -206,6 +207,10 @@ class powerfoxIO extends IPSModule
         $this->SendDebug("Powerfox Status Code", $status_code, 0);
         $result = curl_exec($ch);
         curl_close($ch);
+         */
+        $result = Sys_GetURLContentEx($url,
+            Array("Timeout"=> 20000, "AuthUser"=> $user,
+                "AuthPass"=> $password));
         return $result;
     }
 
